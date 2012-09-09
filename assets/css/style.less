@@ -1,0 +1,170 @@
+
+
+body {
+  padding: 50px 10px 0px 20px;
+--font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  -background-image:url(/images/noise.png);
+
+  background: #F4F4F4 url(http://underscorejs.org/docs/images/background.png);
+
+
+}
+
+
+#beta {
+  background-color:lightyellow;
+  padding:5px;
+  width:400px;
+  position:absolute;
+  top:10px;
+  left:400px;
+  height:20px;
+  font-weight:bold;
+  -webkit-border-radius: 5px;
+  border: 1px solid lightgrey;
+  display:none;
+}
+
+
+#wrap-side {
+  -webkit-border-top-right-radius: 3px;
+-webkit-border-bottom-right-radius: 3px;
+-moz-border-radius-topright: 3px;
+-moz-border-radius-bottomright: 3px;
+border-top-right-radius: 3px;
+border-bottom-right-radius: 3px;
+}
+
+
+
+h1 {
+  font-family: 'Quando', serif;
+  font-size:46px;
+  text-shadow: 1px 2px white;
+  margin:0;
+  letter-spacing: -4px;
+  position:absolute;
+  top:9px;
+  z-index:9999;
+  color: #3F2A1B;
+}
+
+a {
+  color: #00B7FF;
+}
+
+footer .warning {
+  color: grey;
+  font-family: monospace;
+  font-size:13px;
+}
+
+
+a.nodejs, a.mongodb {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+a.nodejs {
+  background-color: #22252A;
+  color: #E3E2E3;
+  border-radius: 2px;
+  padding: 1px 2px;
+}
+
+a.nodejs span {
+  color: #BBC354;
+}
+
+
+a.mongodb {
+  background-color: #3F2A1C;
+  color: white;
+  border-radius: 2px;
+  padding: 1px 2px;
+}
+
+a.mongodb span {
+  color: #F2D8A6;
+}
+
+
+.version {
+  float: left;
+  text-shadow: none;
+  font-size: 10px !important;
+  line-height: 1em !important;
+  display: block;
+  color: #666;
+  text-shadow: 1px 1px 1px white;
+  margin-right: 5px;
+  margin-bottom: 7px;
+  padding: 6px 20px 6px 6px;
+  line-height: 1.3em;
+  border: 1px solid #DDD;
+  webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  position: absolute;
+z-index: 9000;
+left: 355px;
+top: 29px;
+  
+  background: url("data:image/png;charset=utf-8;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAGCAYAAAARx7TFAAAAV0lEQVR42mN4+ObTf3zgybvP/xlA4MvPX1gVfAaKM8DAxrN3/n/7harwO5B/5OZThCIQuPT49f+fv3/DFT148wFVAQw8//AZrODN52/YFcDAh2/fMRQAAGFYfHRjhBGcAAAAAElFTkSuQmCC") 93% 55% no-repeat, #eee;
+}
+
+.version:hover {
+  border: 1px solid #aaa;
+  color:#333;
+  cursor:pointer;
+}
+
+.version-active {
+  border: 1px solid #aaa;
+  color:#333;
+  border-radius: 0;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+  border-bottom: 1px solid #eee;
+}
+
+.version-sel {
+  border-radius: 3px;
+border-top-left-radius: 0;
+  background-color:#eee;
+  position: absolute;
+  z-index:8000;
+  top: 52px;
+  left: 355px;
+  width: 350px;
+   border: 1px solid #aaa;
+ display:none;
+}
+
+.version-active:hover {
+  color: #666;
+  border-bottom: 1px solid #eee;
+
+}
+
+
+.version-sel ul {
+  list-style-type: none;
+  margin:0;
+  padding:0;
+  margin:5px;
+}
+
+.version-sel ul li {
+  padding:5px 15px;
+  border: 1px solid #eee;
+}
+
+.version-sel ul li:hover {
+  border-radius: 5px;
+  border: 1px solid #aaa;
+  cursor: pointer;
+}
+
+
+

@@ -1,0 +1,375 @@
+
+var express = require('express')
+  , mongoose = require('mongoose')
+  , io = require('socket.io')
+  , spawn = require('child_process').spawn
+  , exec = require('child_process').exec
+  , http = require('http')
+  , config = require('./config')
+  , models = require('./models')
+  , MongoConsole = require('./lib/mc');
+
+
+var app = express();
+
+config = {}
+
+app.configure(function(){
+  //app.set('port', process.env.PORT || 3000);
+  app.set('views', __dirname + '/views');
+  app.set('view engine', 'jade');
+  app.use(express.favicon());
+  app.use(express.logger('dev'));
+  app.use(express.bodyParser());
+  app.use(express.methodOverride());
+  app.use(app.router);
+  app.use(express.static(__dirname + '/public'));
+  app.use(require('connect-assets')());
+});
+
+app.configure('production', function() {
+
+});
+
+app.configure('development', function(){
+  app.use(express.errorHandler());
+  
+  config.port = 5000;
+  config.socket = 'http://localhost:'+config.port+'/';
+  config.db_url = 'mongodb://localhost/fiddle';
+  config.max_mongos = 20;
+
+});
+
+var server = http.createServer(app);
+server.listen(config.port)
+var io = io.listen(server);
+
+
+mongoose.connect(config.db_url);
+
+function makeid(size)
+{
+    var text = [];
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".split('');
+
+    for( var i=0; i < size; i++ ) 
+      text.push(possible[Math.floor(Math.random() * 62)]);
+
+    return text.join('');
+}
+
+
+mdb = [
+  ["Production Release","2.0.6"],
+  ["Development Release","2.2.0-rc0"]
+]
+
+mdb_versions = {
+  
+  "2.0.6" : {
+    run : 'mongo_206',
+    servers : [
+      'localhost:9001',
+      'localhost:9002'
+    ]
+  },
+
+  "2.2.0-rc0" : {
+    run : 'mongo_220_rc0',
+    servers : [
+      'localhost:9003',
+      'localhost:9004'
+    ]
+  }
+
+}
+
+
+config.manual = [
+  'start',
+  //'tutorial',
+  'js-shell',
+  'documents',
+  'saving',
+  'saving_and_querying',
+  'basic_queries',
+  'query_operators',
+  'updates',
+  'update_operators',
+  'deleting_data',
+  'end'
+]
+
+config.manual_description = {
+  'start' : "Start",
+  'tutorial' : "Tutorial",
+  'js-shell' : "JS Shell",
+  'documents' : "Documents",
+  'saving' : "Saving",
+  'saving_and_querying' : "Saving and querying",
+  'basic_queries' : "Basic queries",
+  'query_operators' : "Query operators",
+  'updates' : "Updates",
+  'update_operators' : "Update operators",
+  'deleting_data' : "Deleting data",
+  'end' : "Summary"
+}
+
+
+
+
+
+var clientsProcs = {};
+var clients_ids = {};
+
+
+clients_con = {};
+clients_ids = {};
+clients_tutorial = {};
+
+clients_count = 0;
+
+
+// setInterval(function() {
+
+//   console.log(" >>> %j",clients_ids)
+
+// },1000);
+
+
+
+
+
+
+function generate_db(values, callback, max_tries) {
+  
+  if (max_tries == undefined) {
+    max_tries = 10;
+  }
+
+  if (max_tries <= 0) {
+    console.log("FAILED TO GENERATE DB ID");
+    return 0;
+  }
+
+  var db = new models.Db(values);
+  db._id = makeid(5);
+
+  db.save(function(error, item){
+    if (error && error.code === 11000) {
+      generate(values, callback,max_tries-1);
+    } else {
+      callback(db);
+    }
+  });
+
+};
+
+io.configure('development', function(){
+  //io.set('log level', 1);
+});
+
+
+
+
+  function gc(socket) {
+    return clients_con[socket.id];
+  }
+
+
+  function loginInConsole(entry,socket) {
+    var exec_params = ['--host',entry.db_host,'-u',entry.db_user,'-p',entry.db_pass,'--port',entry.db_port,entry.db_name]
+    var console = new MongoConsole({ exec : 'mongo', args : exec_params });
+
+    console.on('output',function(data) {
+      if (!gc(socket).aborted) {
+         socket.emit('message',data);
+      }
+    });
+
+    console.on('state',function(state,data) {
+     socket.emit('change',state,data); 
+    });
+
+    return console;
+  }
+
+
+
+  io.on('connection', function(socket) {
+    
+
+    clients_con[socket.id] = false;
+    
+    clients_count++;
+
+
+    socket.on('disconnect',function() {
+      clients_count--;
+
+      if (clients_con[socket.id]) {
+        clients_con[socket.id].terminate();
+      }
+
+    });
+    
+    
+    socket.on('request-console',function(console_id,version) {
+
+      if (clients_count>=config.max_mongos+1) {
+        socket.emit('change','terminated','Sorry too many clients connected');
+        socket.disconnect();
+        return;
+      }
+
+
+
+     if (console_id) {
+
+       models.Db.findById(console_id,function(err,entry) {
+
+
+
+        if (!entry) {
+
+          socket.emit('change','terminated','DB do not exists');
+          socket.emit('change','dbgone');
+
+        } else {
+
+          socket.emit('change','requesting','Requesting MongoDB '+version);
+          clients_con[socket.id] = loginInConsole(entry,socket);
+
+          clients_ids[socket.id] = entry._id
+
+        }
+
+
+
+
+       });
+     
+     
+     
+     
+     } else {
+      
+
+        socket.emit('change','requesting','Creating MongoDB '+version);
+
+
+     generate_db({},function(entry) {
+
+
+        console.log('saveing');
+    
+        entry.db_name = "db_" + entry._id
+        entry.db_host = "mdbhost1"
+        entry.db_port = 9000 + Math.floor(Math.random()*6)
+        entry.db_user = 'user'
+        entry.db_pass = Math.random().toString(36).substring(7)
+    
+        var child = exec("mongo --port "+entry.db_port+" -u e4cb0e1a4bb907bf4 -p 26219859c9941148d45 admin --eval \"db = db.getSiblingDB('"+entry.db_name+"'); db.addUser('"+entry.db_user+"','"+entry.db_pass+"');\"",
+          function (error, stdout, stderr) {
+          
+            console.log('createdatabase - stdout: ' + stdout);
+            console.log('createdatabase - stderr: ' + stderr);
+            if (error !== null) {
+              console.log('createdatabase - exec error: ' + error);
+            }
+          
+            entry.save(function() {
+            
+              socket.emit('request-console',entry._id);
+              
+              clients_con[socket.id] = loginInConsole(entry,socket);
+              clients_ids[socket.id] = entry._id;
+            
+            });
+    
+          }
+        );
+    
+      });
+
+
+    }
+
+    
+   });
+
+   socket.on('message', function(data) {
+
+    
+
+
+     if (clients_con[socket.id]) {
+
+       if (clients_ids[socket.id]) {
+        models.Db.findById(clients_ids[socket.id],function(err,entry) {
+         if (entry) {
+          entry.last_command = Date.now();
+          entry.commands.push({
+            d: Date.now(),
+            i: socket.handshake.address.address,
+            c: data
+          });
+          entry.save();
+         }
+       });
+       }
+
+      if ( (data == 'tutorial') || (data == 'next') ) {
+        
+        if (!clients_tutorial[socket.id]) {
+          clients_tutorial[socket.id] = 0;
+        }
+
+        clients_tutorial[socket.id] += 1;
+
+        if (clients_tutorial[socket.id] > config.manual.length) {
+          clients_tutorial[socket.id] = 0;
+        }
+
+        socket.emit('manual',config.manual[ clients_tutorial[socket.id] ]);
+      
+      } else {
+
+       if (data.indexOf("\n") != -1) {
+         clients_con[socket.id].multi_command(data);
+       } else {
+         clients_con[socket.id].command(data);
+       };
+
+      }
+      
+      //socket.emit('message',"> "+data);
+     }
+   });
+
+ });
+
+
+
+
+
+app.get('/', function(req, res){
+  res.render('console', { id: null, config: config });
+});
+
+app.get('/:id/shell', function(req,res) {
+  res.render('console', { id: req.params.id, config: config });
+});
+
+app.get('/manual/:name', function(req,res) {
+
+  // FIX THIS SHIT
+  res.render('manual/'+req.params.name, {});
+});
+
+
+
+http.createServer(app).listen(app.get('port'), function(){
+  console.log("port="+config.port);
+});

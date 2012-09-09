@@ -1,0 +1,12 @@
+div(data-id="update_operators",data-title="Update operatorrs")
+  h2 Update Operators
+  | The previous update replaced the entire document, but MongoDB also
+  | supports partial updates to documents. For example, you can set a value:
+  pre
+    | db.users.update({name: 'Cash'}, {'$set': {'age': 50} }); 
+  | You can also push and pull items from arrays:
+  pre
+    | db.users.update({name: 'Sue'}, {'$pull': {'languages': 'scala'} }); 
+    | db.users.update({name: 'Sue'}, {'$push': {'languages': 'ruby'} }); 
+  | Give these a try, check the results, and then enter 'next'.
+

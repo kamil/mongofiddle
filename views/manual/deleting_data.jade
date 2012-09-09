@@ -1,0 +1,8 @@
+div(data-id='deleting_data',data-title='Deleting data')
+  h2 Deleting data
+  | To delete matching documents only, add a query selector to the remove method:
+  pre
+    | db.users.remove({name: 'Sue'});
+  | To delete everything from a collection:
+  pre
+    | db.scores.remove();

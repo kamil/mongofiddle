@@ -1,0 +1,27 @@
+doctype 5
+html(lang='en')
+  head
+    title MongoDb Fiddle
+    link(rel='stylesheet', href='http://fonts.googleapis.com/css?family=Quando')
+  
+    != css('console')
+    != js('console')
+
+    block head
+
+  body
+    block content
+    footer
+      p(style="float:left;").warning
+        = "Powered by "
+        a.nodejs(href="http://nodejs.org") node
+          span JS
+        &amp;
+        a.mongodb(href="http://mongodb.org") mongo
+          span DB
+
+      p(style="float:right;").warning
+        span(style="color:black") Made by
+        span  @
+        a(href="http://twitter.com/KamilZaleski",style="color:black") KamilZaleski
+

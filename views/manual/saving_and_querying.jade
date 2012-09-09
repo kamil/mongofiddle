@@ -1,0 +1,15 @@
+div(data-id="saving_and_querying",data-title='Saving and querying')
+  h2 Saving and Querying
+  | Try adding some documents to the scores collection:
+  pre
+    | for(i=0; i<10; i++) { db.scores.save({a: i, exam: 5}) }; 
+  | 
+  | Try that, then enter
+  pre
+    | db.scores.find(); 
+  | to see if the save succeeded. Since the shell only displays 10 results at time,
+  | you'll need to enter the 'it' command to iterate over the rest.
+  | 
+  | (enter 
+  code next
+  |  when you're ready)

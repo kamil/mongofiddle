@@ -1,0 +1,29 @@
+div(data-id='query_operators',data-title='Query operators')
+ h2 Query Operators
+ | $gt is one of many special query operators. Here are few others:
+ dl.dl-horizontal
+   dt $lt
+   dd less than, "<"
+   dt $lte
+   dd less than or equal, "<=" 
+   dt $gt
+   dd greater than, ">"
+   dt $gte
+   dd greater than or equal, ">="
+   dt $ne
+   dd not equals, !=
+   dt $in
+   dd is in array
+   dt $nin
+   dd not in array
+
+ pre
+   | db.scores.find({a: {'$in': [2, 3, 4]}}); 
+   | db.scores.find({a: {'$gte': 2, '$lte': 4}}); 
+ | Try creating some queries, then type  
+ code next
+ p
+   a.learn-more.label.label-info(href="http://www.mongodb.org/display/DOCS/Advanced+Queries")
+     i.icon-book.icon-white
+     |  Read more about queries
+

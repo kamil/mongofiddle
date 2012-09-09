@@ -1,0 +1,12 @@
+div(data-id="updates",data-title='Updates')
+  h2 Updates
+  | Now create a couple documents like these for updating:
+  pre
+    | db.users.save({name: 'Johnny', languages: ['ruby', 'c']}); 
+    | db.users.save({name: 'Sue', languages: ['scala', 'lisp']}); 
+  | Make sure they were saved by called db.users.find()
+  | Update the first document like so:
+  pre
+    | db.users.update({name: 'Johnny'}, {name: 'Cash', languages: ['english']});
+  
+

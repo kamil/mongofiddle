@@ -1,0 +1,10 @@
+div(data-id='basic_queries',data-title='Basic Queries')
+  h2 Basic Queries
+  | You've already tried a few queries, but let's make them more specific.
+  | How about finding all documents where a == 2:
+  pre
+    | db.scores.find({a: 2}); 
+  | 
+  | Or what about documents where a > 15?
+  pre
+    | db.scores.find({a: {'$gt': 15}}); 
