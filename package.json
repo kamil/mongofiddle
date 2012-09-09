@@ -11,6 +11,7 @@
     "socket.io": "*",
     "mongoose" : "*",
     "connect-assets" : "*",
-    "less" : "*"
+    "less" : "*",
+    "pty.js" : "*"
   }
 }

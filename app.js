@@ -29,6 +29,11 @@ app.configure(function(){
 
 app.configure('production', function() {
 
+  config.port = 80;
+  config.socket = 'http://mongofiddle.com/';
+  config.db_url = 'mongodb://localhost/fiddle';
+  config.max_mongos = 20;
+
 });
 
 app.configure('development', function(){
