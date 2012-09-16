@@ -64,33 +64,6 @@ function makeid(size)
     return text.join('');
 }
 
-
-mdb = [
-  ["Production Release","2.0.6"],
-  ["Development Release","2.2.0-rc0"]
-]
-
-mdb_versions = {
-  
-  "2.0.6" : {
-    run : 'mongo_206',
-    servers : [
-      'localhost:9001',
-      'localhost:9002'
-    ]
-  },
-
-  "2.2.0-rc0" : {
-    run : 'mongo_220_rc0',
-    servers : [
-      'localhost:9003',
-      'localhost:9004'
-    ]
-  }
-
-}
-
-
 config.manual = [
   'start',
   //'tutorial',
@@ -134,17 +107,6 @@ clients_ids = {};
 clients_tutorial = {};
 
 clients_count = 0;
-
-
-// setInterval(function() {
-
-//   console.log(" >>> %j",clients_ids)
-
-// },1000);
-
-
-
-
 
 
 function generate_db(values, callback, max_tries) {
