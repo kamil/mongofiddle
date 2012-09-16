@@ -1,21 +1,13 @@
-
-
-MONGOD_206 = 'mongod'
-MONGOD_22rc0 = 'mongod'
+MONGOD_220 = ENV['MONGOD220'] || 'mongod'
 
 DB = [
-  ['9000', MONGOD_206],
-  ['9001', MONGOD_206],
-  ['9002', MONGOD_206],
-  ['9003', MONGOD_206],
-  ['9004', MONGOD_206],
-  ['9005', MONGOD_206]
+  ['9000', MONGOD_220],
+  ['9001', MONGOD_220],
 ]
 
-DBDIR = "/Users/kamil/mf"
+DBDIR = ENV['DBDIR'] || "~/mfid_dbs"
 
 DB.each do |port,exec|
-#[9000].each do |port|
   God.watch do |w|
    pid_file = "#{DBDIR}/#{port}/mognod.pid" 
     params = [
