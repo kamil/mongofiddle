@@ -48,7 +48,7 @@ function ltrim (str, charlist) {
       self.terminate();
     });
 
-    socket.emit('request-console',conf.id,'2.0.6');
+    socket.emit('request-console',conf.id,'2.2.0');
 
 
     socket.on('request-console',function(c_id) {
