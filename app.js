@@ -1,3 +1,4 @@
+var express = require('express')
   , mongoose = require('mongoose')
   , io = require('socket.io')
   , spawn = require('child_process').spawn
