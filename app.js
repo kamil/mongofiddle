@@ -1,5 +1,3 @@
-
-var express = require('express')
   , mongoose = require('mongoose')
   , io = require('socket.io')
   , spawn = require('child_process').spawn
@@ -233,11 +231,11 @@ io.configure('development', function(){
     
         entry.db_name = "db_" + entry._id
         entry.db_host = "mdbhost1"
-        entry.db_port = 9000 + Math.floor(Math.random()*6)
+        entry.db_port = 9000 + Math.floor(Math.random()*2)
         entry.db_user = 'user'
         entry.db_pass = Math.random().toString(36).substring(7)
     
-        var child = exec("mongo --port "+entry.db_port+" -u e4cb0e1a4bb907bf4 -p 26219859c9941148d45 admin --eval \"db = db.getSiblingDB('"+entry.db_name+"'); db.addUser('"+entry.db_user+"','"+entry.db_pass+"');\"",
+        var child = exec("mongo --port "+entry.db_port+" -u "+process.env.ADMIN_USER+" -p "+process.env.ADMIN_PASS+" admin --eval \"db = db.getSiblingDB('"+entry.db_name+"'); db.addUser('"+entry.db_user+"','"+entry.db_pass+"');\"",
           function (error, stdout, stderr) {
           
             console.log('createdatabase - stdout: ' + stdout);
