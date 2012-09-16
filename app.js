@@ -144,8 +144,16 @@ io.configure('development', function(){
 
 
   function loginInConsole(entry,socket) {
-    var exec_params = ['--host',entry.db_host,'-u',entry.db_user,'-p',entry.db_pass,'--port',entry.db_port,entry.db_name]
-    var console = new MongoConsole({ exec : 'mongo', args : exec_params });
+    var console = new MongoConsole({
+      exec : process.env.MCONSOLE || 'mongo',
+      args : process.env.MARGS.split(' ').concat([
+        '--host', entry.db_host,
+        '-u', entry.db_user,
+        '-p', entry.db_pass,
+        '--port', entry.db_port,
+        entry.db_name
+      ])
+    });
 
     console.on('output',function(data) {
       if (!gc(socket).aborted) {
