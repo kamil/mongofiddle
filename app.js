@@ -33,6 +33,9 @@ app.configure('production', function() {
   config.db_url = 'mongodb://localhost/fiddle';
   config.max_mongos = 20;
 
+  config.mongo_cmd = process.env.MCONSOLE || 'mongo'
+  config.mongo_args = process.env.MARGS || ""
+
 });
 
 app.configure('development', function(){
@@ -41,7 +44,10 @@ app.configure('development', function(){
   config.port = 5000;
   config.socket = 'http://localhost:'+config.port+'/';
   config.db_url = 'mongodb://localhost/fiddle';
-  config.max_mongos = 20;
+  config.max_mongos = 5;
+
+  config.mongo_cmd = 'mongo'
+  config.mongo_args = ''
 
 });
 
@@ -145,15 +151,23 @@ io.configure('development', function(){
 
 
   function loginInConsole(entry,socket) {
+
+    if (entry.db_host != "localhost") {
+      params = [
+          '--host', entry.db_host,
+          '-u', entry.db_user,
+          '-p', entry.db_pass,
+          '--port', entry.db_port,
+         entry.db_name
+      ]
+      mongo_args = config.mongo_args.split(' ').concat(params)
+    } else {
+      mongo_args = [entry.db_name]
+    }
+
     var console = new MongoConsole({
-      exec : process.env.MCONSOLE || 'mongo',
-      args : process.env.MARGS.split(' ').concat([
-        '--host', entry.db_host,
-        '-u', entry.db_user,
-        '-p', entry.db_pass,
-        '--port', entry.db_port,
-        entry.db_name
-      ])
+      exec : config.mongo_cmd,
+      args : mongo_args
     });
 
     console.on('output',function(data) {
@@ -239,32 +253,39 @@ io.configure('development', function(){
         console.log('saveing');
     
         entry.db_name = "db_" + entry._id
-        entry.db_host = "mdbhost1"
-        entry.db_port = 9000 + Math.floor(Math.random()*2)
-        entry.db_user = 'user'
-        entry.db_pass = Math.random().toString(36).substring(7)
-    
-        var child = exec("mongo --port "+entry.db_port+" -u "+process.env.ADMIN_USER+" -p "+process.env.ADMIN_PASS+" admin --eval \"db = db.getSiblingDB('"+entry.db_name+"'); db.addUser('"+entry.db_user+"','"+entry.db_pass+"');\"",
-          function (error, stdout, stderr) {
-          
-            console.log('createdatabase - stdout: ' + stdout);
-            console.log('createdatabase - stderr: ' + stderr);
-            if (error !== null) {
-              console.log('createdatabase - exec error: ' + error);
+        entry.db_host = "localhost"
+        entry.db_port = 27017
+
+        if (app.get('env') == 'production') {
+
+          entry.db_host = "mdbhost1"
+          entry.db_port = 9000 + Math.floor(Math.random()*2)
+          entry.db_user = 'user'
+          entry.db_pass = Math.random().toString(36).substring(7);
+
+          exec("mongo --port "+entry.db_port+" -u "+process.env.ADMIN_USER+" -p "+process.env.ADMIN_PASS+" admin --eval \"db = db.getSiblingDB('"+entry.db_name+"'); db.addUser('"+entry.db_user+"','"+entry.db_pass+"');\"",
+            function (error, stdout, stderr) {
+              console.log('createdatabase - stdout: ' + stdout);
+              console.log('createdatabase - stderr: ' + stderr);
+              if (error !== null) {
+                console.log('createdatabase - exec error: ' + error);
+              }
+              entry.save(function() {
+                socket.emit('request-console',entry._id);
+                clients_con[socket.id] = loginInConsole(entry,socket);
+                clients_ids[socket.id] = entry._id;
+              });
             }
-          
-            entry.save(function() {
-            
-              socket.emit('request-console',entry._id);
-              
-              clients_con[socket.id] = loginInConsole(entry,socket);
-              clients_ids[socket.id] = entry._id;
-            
-            });
-    
-          }
-        );
-    
+          );
+
+        } else {
+          entry.save(function() {
+            socket.emit('request-console',entry._id);
+            clients_con[socket.id] = loginInConsole(entry,socket);
+            clients_ids[socket.id] = entry._id;
+          });
+        }
+
       });
 
 
