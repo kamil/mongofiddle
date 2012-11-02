@@ -69,37 +69,6 @@ function makeid(size)
     return text.join('');
 }
 
-config.manual = [
-  'start',
-  //'tutorial',
-  'js-shell',
-  'documents',
-  'saving',
-  'saving_and_querying',
-  'basic_queries',
-  'query_operators',
-  'updates',
-  'update_operators',
-  'deleting_data',
-  'end'
-]
-
-config.manual_description = {
-  'start' : "Start",
-  'tutorial' : "Tutorial",
-  'js-shell' : "JS Shell",
-  'documents' : "Documents",
-  'saving' : "Saving",
-  'saving_and_querying' : "Saving and querying",
-  'basic_queries' : "Basic queries",
-  'query_operators' : "Query operators",
-  'updates' : "Updates",
-  'update_operators' : "Update operators",
-  'deleting_data' : "Deleting data",
-  'end' : "Summary"
-}
-
-
 
 
 
@@ -357,14 +326,7 @@ app.get('/:id/shell', function(req,res) {
   res.render('console', { id: req.params.id, config: config });
 });
 
-app.get('/manual/:name', function(req,res) {
-
-  // FIX THIS SHIT
-  res.render('manual/'+req.params.name, {});
-});
 
 
 
-http.createServer(app).listen(app.get('port'), function(){
-  console.log("port="+config.port);
-});
+http.createServer(app).listen(app.get('port'), function(){});
