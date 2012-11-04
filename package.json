@@ -12,6 +12,7 @@
     "mongoose" : "*",
     "connect-assets" : "*",
     "less" : "*",
-    "pty.js" : "*"
+    "pty.js" : "*",
+    "underscore" : "*"
   }
 }

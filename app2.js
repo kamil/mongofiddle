@@ -4,6 +4,7 @@ var express = require('express')
   , util = require('util')
   , events = require('events')
   , exec = require('child_process').exec
+  , _ = require('underscore')
   , pty = require('pty.js');
 
 
@@ -42,6 +43,8 @@ var Terminal = function(conf) {
   var time_start = new Date().getTime(),
       time_last = time_start;
 
+  var last_status, dout = 0, din = 0;
+
   var proc = pty.spawn(conf.exec, conf.args, {
     name: 'xterm',
     cols: 80,
@@ -54,14 +57,19 @@ var Terminal = function(conf) {
   proc.on('close', function() { console.log('TERM -> CLOSE'); });
 
   proc.on('data', function(data) {
-    console.log('TERM '+data);
     self.emit('data',data);
+    dout += _.size(data);
     self.update();
   });
 
   this.write = function(data) {
+    din += _.size(data);
     proc.write(data);
     self.update();
+  }
+
+  this.get_last_status = function() {
+    return self.last_status;
   }
 
   this.update = function() {
@@ -71,19 +79,25 @@ var Terminal = function(conf) {
   this.status = function(stats) {
     exec('ps -o pcpu,rss,pid -p '+proc.pid,function(a,out,c) {
       out = out.match(/[0-9]*\.?[0-9]/g);
-      stats({
+      self.last_status = {
         cpu: parseFloat(out[0]),
         ram: parseInt(out[1]),
         pid: parseInt(out[2]),
+        dout: dout,
+        din: din,
         ina: parseInt((new Date().getTime()-time_last) / 1000)
-      });
+      };
+      stats(self.last_status);
     });
+  }
+
+  this.kill = function() {
+    exec('kill -p');
   }
 
   this.monitor = function() {
     setInterval(function() {
       self.status(function(o) {
-        console.log(o);
       });
     },1000);
   }
@@ -93,9 +107,12 @@ var Terminal = function(conf) {
 }
 util.inherits(Terminal, events.EventEmitter);
 
-var TerminalManager = function() {
+var TerminalManager = function(conf) {
   events.EventEmitter.call(this);
   var self = this, connections = {};
+
+  var last_status;
+
 
   this.get = function(socket) {
     return connections[socket.id]
@@ -108,7 +125,9 @@ var TerminalManager = function() {
     });
 
     terminal.on('data',function(data) {
-      socket.emit('message',data);
+      setTimeout(function() {
+        socket.emit('data',data);
+      },100);
     });
 
     connections[socket.id] = terminal;
@@ -118,11 +137,31 @@ var TerminalManager = function() {
     self.get(socket).write(data);
   }
 
+  this.send_update = function() {
+
+    list = []
+    _.each(connections, function(terminal,socket) {
+      list.push(terminal.get_last_status());
+    });
+
+    new_status = {
+      connections: Object.keys(connections).length,
+      list: list
+    }
+
+    if (!_.isEqual(new_status,self.last_status)) {
+      self.last_status = new_status
+      conf.sockets.emit('status', self.last_status);
+    }
+  }
+
+  setInterval(self.send_update,1000)
+
 }
 util.inherits(Terminal, events.EventEmitter);
 
 
-var tm = new TerminalManager();
+var tm = new TerminalManager({ sockets: io.sockets });
 
 io.on('connection', function(socket) {
 
@@ -130,7 +169,7 @@ io.on('connection', function(socket) {
     tm.request(socket);
   });
 
-  socket.on('message', function(data) {
+  socket.on('data', function(data) {
     tm.write(socket,data);
   });
 

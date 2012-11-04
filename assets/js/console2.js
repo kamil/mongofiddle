@@ -32,16 +32,15 @@ $(function(){
           console.log('connected');
 
           term.on('data', function(data) {
-            socket.emit('message', data);
+            socket.emit('data', data);
           });
 
           term.on('title', function(title) {
             document.title = title;
           });
 
-          socket.on('message', function(data) {
-            console.log(' < data '+data);
-            term.write(data);
+          socket.on('data', function(data) {
+            setTimeout(function() { term.write(data); },100);
           });
         });
 
@@ -49,5 +48,9 @@ $(function(){
 
   socket.emit('request-console', ConsoleConfig.console_id );
 
+
+  socket.on('status',function(status) {
+    $('#server-status').html(JSON.stringify(status,undefined, 2));
+  });
 
 })
