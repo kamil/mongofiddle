@@ -47,7 +47,9 @@ var Terminal = function(conf) {
       dout = 0,
       din = 0,
       alive = false,
-      monitor_cycle;
+      monitor_cycle,
+      history_cycles = 10,
+      history = { cpu: [], ram: [], };
 
   var proc = pty.spawn(conf.exec, conf.args, {
     name: 'xterm',
@@ -78,19 +80,25 @@ var Terminal = function(conf) {
     }
   }
 
-  this.get_last_status = function() {
-    return self.last_status;
+  this.getLastStatus = function() {
+    return last_status;
   }
 
   this.update = function() {
     time_last = new Date().getTime();
   }
 
-  this.status = function(stats) {
+  this.status = function() {
+    _.each(history, function (value,key) {
+      
+    });
+  }
+
+  this.updateStatus = function(stats) {
     exec('ps -o pcpu,rss,pid -p '+proc.pid,function(a,out,c) {
       try {
         out = out.match(/[0-9]*\.?[0-9]/g);
-        self.last_status = {
+        last_status = {
           cpu: parseFloat(out[0]),
           ram: parseInt(out[1]),
           pid: parseInt(out[2]),
@@ -98,7 +106,16 @@ var Terminal = function(conf) {
           din: din,
           ina: parseInt((new Date().getTime()-time_last) / 1000)
         };
-        stats(self.last_status);
+
+        _.each(["cpu","ram"], function(key){
+          history[key].push(last_status[key]);
+          if (history[key].length > history_cycles) {
+            history[key].shift();
+          }
+          last_status[key+"_avg"] = _.reduce(history[key], function(m, n){ return m+n; }) / history[key].length;
+        });
+
+        stats(last_status);
       } catch(err) {
         alive = false
       }
@@ -114,7 +131,9 @@ var Terminal = function(conf) {
       if (!alive) {
         clearInterval(monitor_cycle)
       } else {
-        self.status(function(o) {});
+        self.updateStatus(function(o) {
+          console.log( history );
+        });
       }
     },1000);
   }
@@ -156,7 +175,7 @@ var TerminalManager = function(conf) {
 
     list = []
     _.each(connections, function(terminal,socket) {
-      list.push(terminal.get_last_status());
+      list.push(terminal.getLastStatus());
     });
 
     new_status = {
