@@ -43,7 +43,11 @@ var Terminal = function(conf) {
   var time_start = new Date().getTime(),
       time_last = time_start;
 
-  var last_status, dout = 0, din = 0;
+  var last_status = {},
+      dout = 0,
+      din = 0,
+      alive = false,
+      monitor_cycle;
 
   var proc = pty.spawn(conf.exec, conf.args, {
     name: 'xterm',
@@ -57,15 +61,21 @@ var Terminal = function(conf) {
   proc.on('close', function() { console.log('TERM -> CLOSE'); });
 
   proc.on('data', function(data) {
+    if (!alive) {
+      alive = true;
+      self.monitor();
+    }
     self.emit('data',data);
     dout += _.size(data);
     self.update();
   });
 
   this.write = function(data) {
-    din += _.size(data);
-    proc.write(data);
-    self.update();
+    if (alive) {
+      din += _.size(data);
+      proc.write(data);
+      self.update();
+    }
   }
 
   this.get_last_status = function() {
@@ -78,16 +88,20 @@ var Terminal = function(conf) {
 
   this.status = function(stats) {
     exec('ps -o pcpu,rss,pid -p '+proc.pid,function(a,out,c) {
-      out = out.match(/[0-9]*\.?[0-9]/g);
-      self.last_status = {
-        cpu: parseFloat(out[0]),
-        ram: parseInt(out[1]),
-        pid: parseInt(out[2]),
-        dout: dout,
-        din: din,
-        ina: parseInt((new Date().getTime()-time_last) / 1000)
-      };
-      stats(self.last_status);
+      try {
+        out = out.match(/[0-9]*\.?[0-9]/g);
+        self.last_status = {
+          cpu: parseFloat(out[0]),
+          ram: parseInt(out[1]),
+          pid: parseInt(out[2]),
+          dout: dout,
+          din: din,
+          ina: parseInt((new Date().getTime()-time_last) / 1000)
+        };
+        stats(self.last_status);
+      } catch(err) {
+        alive = false
+      }
     });
   }
 
@@ -96,13 +110,14 @@ var Terminal = function(conf) {
   }
 
   this.monitor = function() {
-    setInterval(function() {
-      self.status(function(o) {
-      });
+    monitor_cycle = setInterval(function() {
+      if (!alive) {
+        clearInterval(monitor_cycle)
+      } else {
+        self.status(function(o) {});
+      }
     },1000);
   }
-
-  this.monitor();
 
 }
 util.inherits(Terminal, events.EventEmitter);
