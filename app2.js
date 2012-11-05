@@ -122,17 +122,21 @@ var Terminal = function(conf) {
     });
   }
 
-  this.kill = function() {
-    exec('kill -p '+proc.pid);
+  this.kill = function(reason) {
+    self.emit('msg',"KILL: "+reason);
+    exec('kill '+proc.pid);
   }
 
   this.monitor = function() {
     monitor_cycle = setInterval(function() {
       if (!alive) {
-        clearInterval(monitor_cycle)
+        clearInterval(monitor_cycle);
       } else {
-        self.updateStatus(function(o) {
-          console.log( history );
+        self.updateStatus(function(status) {
+
+          if (status["cpu_avg"] > 90)    { self.kill('avg cpu over 90%');  }
+          if (status["ram_avg"] > 10000) { self.kill('avg ram over 10Mb'); }
+
         });
       }
     },1000);
@@ -162,6 +166,10 @@ var TerminalManager = function(conf) {
       setTimeout(function() {
         socket.emit('data',data);
       },100);
+    });
+
+    terminal.on('msg',function(msg) {
+      socket.emit('msg',msg);
     });
 
     connections[socket.id] = terminal;

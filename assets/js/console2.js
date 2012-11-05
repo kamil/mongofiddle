@@ -53,4 +53,8 @@ $(function(){
     $('#server-status').html(JSON.stringify(status,undefined, 2));
   });
 
+  socket.on('msg',function(msg) {
+    term.write("\n"+msg+"\n\r");
+  });
+
 })
