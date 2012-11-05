@@ -48,7 +48,7 @@ var Terminal = function(conf) {
       din = 0,
       alive = false,
       monitor_cycle,
-      history_cycles = 10,
+      history_cycles = 5, // seconds
       history = { cpu: [], ram: [], };
 
   var proc = pty.spawn(conf.exec, conf.args, {
