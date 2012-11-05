@@ -106,7 +106,7 @@ var Terminal = function(conf) {
   }
 
   this.kill = function() {
-    exec('kill -p');
+    exec('kill -p '+proc.pid);
   }
 
   this.monitor = function() {
