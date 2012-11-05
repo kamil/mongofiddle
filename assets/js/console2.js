@@ -40,7 +40,7 @@ $(function(){
           });
 
           socket.on('data', function(data) {
-            setTimeout(function() { term.write(data); },100);
+            setTimeout(function() { term.write(data); },1);
           });
         });
 

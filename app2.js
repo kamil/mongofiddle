@@ -123,8 +123,10 @@ var Terminal = function(conf) {
   }
 
   this.kill = function(reason) {
-    self.emit('msg',"KILL: "+reason);
-    exec('kill '+proc.pid);
+    if (alive) {
+      self.emit('msg',"KILL: "+reason);
+      exec('kill '+proc.pid);
+    }
   }
 
   this.monitor = function() {
@@ -165,7 +167,7 @@ var TerminalManager = function(conf) {
     terminal.on('data',function(data) {
       setTimeout(function() {
         socket.emit('data',data);
-      },100);
+      },1);
     });
 
     terminal.on('msg',function(msg) {
