@@ -120,8 +120,7 @@ var Terminal = function(conf) {
         };
 
         _.each(["cpu","ram"], function(key){
-          history[key].push(last_status[key]);
-          if (history[key].length > history_cycles) {
+          if ( history[key].push(last_status[key]) > history_cycles ) {
             history[key].shift();
           }
           last_status[key+"_avg"] = _.reduce(history[key], function(m, n){ return m+n; }) / history[key].length;
