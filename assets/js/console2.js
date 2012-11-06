@@ -48,13 +48,20 @@ $(function(){
 
   socket.emit('request-console', ConsoleConfig.console_id );
 
+  socket.on('request-console',function(c_id) {
+    window.history.replaceState({console_id:c_id}, null, "/" + c_id + "/shell");
+    console_id = c_id;
+  });
+
+
+
 
   socket.on('status',function(status) {
     $('#server-status').html(JSON.stringify(status,undefined, 2));
   });
 
   socket.on('msg',function(msg) {
-    term.write("\n"+msg+"\n\r");
+    term.write(msg);
   });
 
 })

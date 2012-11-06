@@ -5,6 +5,7 @@ var express = require('express')
   , events = require('events')
   , exec = require('child_process').exec
   , _ = require('underscore')
+  , colors = require('colors')
   , pty = require('pty.js');
 
 
@@ -36,6 +37,10 @@ server.listen(config.port)
 var io = io.listen(server);
 
 
+io.configure('development', function () {
+  io.disable('log');
+});
+
 
 var Terminal = function(conf) {
   events.EventEmitter.call(this);
@@ -58,9 +63,15 @@ var Terminal = function(conf) {
     env: process.env
   });
 
-  proc.on('exit',  function() { console.log('TERM -> EXIT');  });
+  proc.on('exit',  function() {
+    console.log('TERM -> EXIT');
+    alive = false;
+  });
   proc.on('error', function() { console.log('TERM -> ERROR'); });
-  proc.on('close', function() { console.log('TERM -> CLOSE'); });
+  proc.on('close', function() {
+    console.log('TERM -> CLOSE');
+    alive = false;
+  });
 
   proc.on('data', function(data) {
     if (!alive) {
@@ -102,9 +113,10 @@ var Terminal = function(conf) {
           cpu: parseFloat(out[0]),
           ram: parseInt(out[1]),
           pid: parseInt(out[2]),
-          dout: dout,
-          din: din,
-          ina: parseInt((new Date().getTime()-time_last) / 1000)
+          dataOut: dout,
+          dataIn: din,
+          inactive: parseInt((new Date().getTime()-time_last) / 1000),
+          live: parseInt((new Date().getTime()-time_start) / 1000)
         };
 
         _.each(["cpu","ram"], function(key){
@@ -117,7 +129,8 @@ var Terminal = function(conf) {
 
         stats(last_status);
       } catch(err) {
-        alive = false
+        alive = false;
+        stats(false)
       }
     });
   }
@@ -126,6 +139,13 @@ var Terminal = function(conf) {
     if (alive) {
       self.emit('msg',"KILL: "+reason);
       exec('kill '+proc.pid);
+      setTimeout(function() {
+        self.updateStatus(function(status){
+          if (status) {
+            exec('kill -9 '+status["pid"]);
+          }
+        });
+      },5000); // try hard killing after 5 sec
     }
   }
 
@@ -135,10 +155,9 @@ var Terminal = function(conf) {
         clearInterval(monitor_cycle);
       } else {
         self.updateStatus(function(status) {
-
-          if (status["cpu_avg"] > 90)    { self.kill('avg cpu over 90%');  }
-          if (status["ram_avg"] > 10000) { self.kill('avg ram over 10Mb'); }
-
+          if (status["cpu_avg"]   > 90    ) { self.kill('avg cpu over 90%');      }
+          if (status["ram_avg"]   > 10000 ) { self.kill('avg ram over 10Mb');     }
+          if (status["inactive"]  > 10*60 ) { self.kill('inactivity over 10min');  }
         });
       }
     },1000);
@@ -149,19 +168,24 @@ util.inherits(Terminal, events.EventEmitter);
 
 var TerminalManager = function(conf) {
   events.EventEmitter.call(this);
-  var self = this, connections = {};
+  var self = this, connections = {}, entries = {};
 
   var last_status;
 
 
   this.get = function(socket) {
-    return connections[socket.id]
+    return connections[socket.id];
   }
 
-  this.request = function(socket) {
+  this.getEntry = function(socket) {
+    return entries[socket.id];
+  }
+
+  this.request = function(socket,entry) {
+
     var terminal = new Terminal({
       exec : 'mongo',
-      args : []
+      args : [entry.mongo["name"]]
     });
 
     terminal.on('data',function(data) {
@@ -174,6 +198,7 @@ var TerminalManager = function(conf) {
       socket.emit('msg',msg);
     });
 
+    entries[socket.id] = entry;
     connections[socket.id] = terminal;
   }
 
@@ -195,7 +220,7 @@ var TerminalManager = function(conf) {
 
     if (!_.isEqual(new_status,self.last_status)) {
       self.last_status = new_status
-      conf.sockets.emit('status', self.last_status);
+      conf.sockets.volatile.emit('status', self.last_status);
     }
   }
 
@@ -205,12 +230,102 @@ var TerminalManager = function(conf) {
 util.inherits(Terminal, events.EventEmitter);
 
 
+
+
+var mongoose = require('mongoose')
+  , Schema = mongoose.Schema
+  , Mixed = mongoose.Schema.Types.Mixed
+  , ObjectId = Schema.ObjectId;
+
+var dbSchema = new Schema({
+  _id     : String,
+  mongo   : Mixed,
+  updated : Date,
+  created : { type: Date, default: Date.now }
+}, { _id: false, autoIndex: false });
+
+
+db = mongoose.createConnection('localhost', 'mongofiddle')
+
+var Db = db.model('dbs', dbSchema); 
+
+function makeid(size)
+{
+    var text = [];
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".split('');
+
+    for( var i=0; i < size; i++ ) 
+      text.push(possible[Math.floor(Math.random() * 62)]);
+
+    return text.join('');
+}
+
+
+function createNewDb(values, callback, max_tries) {
+  
+  if (max_tries == undefined) {
+    max_tries = 10;
+  }
+
+  if (max_tries <= 0) {
+    console.log("FAILED TO GENERATE DB ID");
+    return 0;
+  }
+
+  var db = new Db(values);
+  db._id = makeid(5);
+
+  db.save(function(error, item){
+    if (error && error.code === 11000) {
+      createNewDb(values, callback,max_tries-1);
+    } else {
+      callback(db);
+    }
+  });
+
+};
+
+
+
+
 var tm = new TerminalManager({ sockets: io.sockets });
 
 io.on('connection', function(socket) {
 
-  socket.on('request-console',function() {
-    tm.request(socket);
+  socket.on('request-console',function(id,version) {
+
+
+    if (id) {
+      console.log('searching for id');
+      Db.findById(id, function(err,entry) {
+        if (!entry) {
+          // TODO: INFORM USER ABOUT NON EXISTING ID
+          socket.emit('msg','DB not found');
+        } else {
+          socket.emit('msg','Requesting database...'.bold.grey+"\n\r");
+          tm.request(socket,entry);
+        }
+      });
+    } else {
+      // CREATE NEW DB
+
+      socket.emit('msg','Creating new MongoDB database for you...'.bold.grey+"\n\r");
+
+      createNewDb({},function(entry) {
+        entry.mongo = {
+          name: "db_" + entry._id,
+          host: "localhost",
+          port: 27017
+        }
+        entry.save(function() {
+          socket.emit('request-console',entry._id);
+          tm.request(socket,entry);
+        });
+      });
+
+    }
+
+
   });
 
   socket.on('data', function(data) {
