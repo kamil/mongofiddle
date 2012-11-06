@@ -42,6 +42,21 @@ io.configure('development', function () {
 });
 
 
+c = {
+  '2.2.1' : {
+    name: 'Production Release',
+    mongo: 'mongo',
+    mongod: [
+      { host: 'localhost', port: 27017 },
+      { host: 'localhost', port: 27018, user: 'admin', pass: '12312312' }
+    ]
+  },
+  '2.3.0' : {
+    name: 'Development Release'
+  }
+}
+
+
 var Terminal = function(conf) {
   events.EventEmitter.call(this);
   var self = this;
@@ -136,6 +151,7 @@ var Terminal = function(conf) {
 
   this.kill = function(reason) {
     if (alive) {
+      alive = false;
       self.emit('msg',"KILL: "+reason);
       exec('kill '+proc.pid);
       setTimeout(function() {
