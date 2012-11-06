@@ -264,19 +264,17 @@ db = mongoose.createConnection('localhost', 'mongofiddle')
 
 var Db = db.model('dbs', dbSchema); 
 
-function makeid(size)
-{
-    var text = [];
-    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".split('');
+function makeRandomId(size) {
+  var text = '', possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-    for( var i=0; i < size; i++ ) 
-      text.push(possible[Math.floor(Math.random() * 62)]);
+  for( var i=0; i < size; i++ )
+    text += possible[Math.floor(Math.random() * 62)];
 
-    return text.join('');
+  return text;
 }
 
 
-function createNewDb(values, callback, max_tries) {
+function createNewDbId(callback, max_tries) {
   
   if (max_tries == undefined) {
     max_tries = 10;
@@ -287,12 +285,12 @@ function createNewDb(values, callback, max_tries) {
     return 0;
   }
 
-  var db = new Db(values);
-  db._id = makeid(5);
+  var db = new Db();
+  db._id = makeRandomId(6);
 
   db.save(function(error, item){
     if (error && error.code === 11000) {
-      createNewDb(values, callback,max_tries-1);
+      createNewDbId(callback,max_tries-1);
     } else {
       callback(db);
     }
@@ -326,7 +324,7 @@ io.on('connection', function(socket) {
 
       socket.emit('msg','Creating new MongoDB database for you...'.bold.grey+"\n\r");
 
-      createNewDb({},function(entry) {
+      createNewDbId({},function(entry) {
         entry.mongo = {
           name: "db_" + entry._id,
           host: "localhost",
