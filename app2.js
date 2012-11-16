@@ -6,6 +6,7 @@ var express = require('express')
   , exec = require('child_process').exec
   , _ = require('underscore')
   , colors = require('colors')
+  , utils = require('./lib/utils')
   , pty = require('pty.js');
 
 
@@ -264,39 +265,44 @@ db = mongoose.createConnection('localhost', 'mongofiddle')
 
 var Db = db.model('dbs', dbSchema); 
 
-function makeRandomId(size) {
-  var text = '', possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-  for( var i=0; i < size; i++ )
-    text += possible[Math.floor(Math.random() * 62)];
-
-  return text;
-}
 
 
-function createNewDbId(callback, max_tries) {
+
+function createNewDB(attrs, callback, max_tries) {
   
   if (max_tries == undefined) {
     max_tries = 10;
   }
 
   if (max_tries <= 0) {
-    console.log("FAILED TO GENERATE DB ID");
-    return 0;
+    callback({ text: "FAILED TO GENERATE DB ID" }, null);
+    return
   }
 
   var db = new Db();
-  db._id = makeRandomId(6);
+  db._id = utils.makeRandomId(6);
 
-  db.save(function(error, item){
-    if (error && error.code === 11000) {
-      createNewDbId(callback,max_tries-1);
+  db.save(function(err, item){
+    if (err && err.code === 11000) {
+      createNewDB(attrs, callback, max_tries-1);
     } else {
-      callback(db);
-    }
+      
+      db.mongo = _.extend({
+        name: "db_" + entry._id,
+      },atrrs);
+
+      db.save(function(err, item) {
+        callback(db);
+      });
+
+    } // err
   });
 
 };
+
+// createDb('2.2.0',{ name: user: pass: })
+function createDb(version,db) {
+}
 
 
 
@@ -324,17 +330,16 @@ io.on('connection', function(socket) {
 
       socket.emit('msg','Creating new MongoDB database for you...'.bold.grey+"\n\r");
 
-      createNewDbId({},function(entry) {
-        entry.mongo = {
-          name: "db_" + entry._id,
-          host: "localhost",
+
+      createNewDB({
+          name: "db_{id}",
+          host: 'localhost',
           port: 27017
-        }
-        entry.save(function() {
+        },function(err,entry) {
           socket.emit('request-console',entry._id);
           tm.request(socket,entry);
-        });
       });
+
 
     }
 
@@ -353,7 +358,7 @@ io.on('connection', function(socket) {
 
 
 
-app.get('/', function(req, res){
+app.get('/', function(req, res) {
   res.render('console', { id: null, config: config });
 });
 
