@@ -61,6 +61,13 @@ c = {
 var Terminal = function(conf) {
   events.EventEmitter.call(this);
   var self = this;
+
+  var max = {
+    inactivity: 0.5,
+    cpu: 90,
+    ram: 10
+  };
+
   var time_start = new Date().getTime(),
       time_last = time_start;
 
@@ -92,7 +99,6 @@ var Terminal = function(conf) {
   proc.on('data', function(data) {
     if (!alive) {
       alive = true;
-      self.monitor();
     }
     self.emit('data',data);
     dout += _.size(data);
@@ -159,25 +165,24 @@ var Terminal = function(conf) {
         self.updateStatus(function(status){
           if (status) {
             exec('kill -9 '+status["pid"]);
+          } else {
+            self.emit('killed');
+            clearInterval(monitor_cycle);
           }
         });
       },5000); // try hard killing after 5 sec
     }
   }
 
-  this.monitor = function() {
-    monitor_cycle = setInterval(function() {
-      if (!alive) {
-        clearInterval(monitor_cycle);
-      } else {
-        self.updateStatus(function(status) {
-          if (status["cpu_avg"]   > 90    ) { self.kill('avg cpu over 90%');      }
-          if (status["ram_avg"]   > 10000 ) { self.kill('avg ram over 10Mb');     }
-          if (status["inactive"]  > 10*60 ) { self.kill('inactivity over 10min');  }
-        });
-      }
-    },1000);
-  }
+  monitor_cycle = setInterval(function() {
+    if (alive) {
+      self.updateStatus(function(status) {
+        if (status["cpu_avg"]   > max.cpu ) { self.kill('avg cpu over '+max.cpu+'%');      }
+        if (status["ram_avg"]   > max.ram*1024 ) { self.kill('avg ram over '+max.ram+'MB');     }
+        if (status["inactive"]  > max.inactivity*60 ) { self.kill('inactivity over '+max.inactivity+' min');  }
+      });
+    }
+  },1000);
 
 }
 util.inherits(Terminal, events.EventEmitter);
@@ -212,6 +217,11 @@ var TerminalManager = function(conf) {
 
     terminal.on('msg',function(msg) {
       socket.emit('msg',msg);
+    });
+
+    terminal.on('killed',function() {
+      delete connections[socket.id];
+      delete entries[socket.id];
     });
 
     entries[socket.id] = entry;
@@ -286,13 +296,13 @@ function createNewDB(attrs, callback, max_tries) {
     if (err && err.code === 11000) {
       createNewDB(attrs, callback, max_tries-1);
     } else {
-      
+
       db.mongo = _.extend({
-        name: "db_" + entry._id,
-      },atrrs);
+        name: "db_" + item._id
+      },attrs);
 
       db.save(function(err, item) {
-        callback(db);
+        callback(err,db);
       });
 
     } // err
@@ -332,7 +342,6 @@ io.on('connection', function(socket) {
 
 
       createNewDB({
-          name: "db_{id}",
           host: 'localhost',
           port: 27017
         },function(err,entry) {
