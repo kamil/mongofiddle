@@ -6,6 +6,7 @@ var express = require('express')
   , _ = require('underscore')
   , colors = require('colors')
   , term = require('./lib/terminal')
+  , TerminalManager = require('./lib/terminal_manager').TerminalManager
   , utils = require('./lib/utils');
 
 
@@ -55,76 +56,6 @@ c = {
     name: 'Development Release'
   }
 }
-
-
-var TerminalManager = function(conf) {
-  events.EventEmitter.call(this);
-  var self = this, connections = {}, entries = {};
-
-  var last_status;
-
-
-  this.get = function(socket) {
-    return connections[socket.id];
-  }
-
-  this.getEntry = function(socket) {
-    return entries[socket.id];
-  }
-
-  this.request = function(socket,entry) {
-
-    var terminal = new term.Terminal({
-      exec : 'mongo',
-      args : [entry.mongo["name"]]
-    });
-
-    terminal.on('data',function(data) {
-      setTimeout(function() {
-        socket.emit('data',data);
-      },1);
-    });
-
-    terminal.on('msg',function(msg) {
-      socket.emit('msg',msg);
-    });
-
-    terminal.on('killed',function() {
-      delete connections[socket.id];
-      delete entries[socket.id];
-    });
-
-    entries[socket.id] = entry;
-    connections[socket.id] = terminal;
-  }
-
-  this.write = function(socket,data) {
-    self.get(socket).write(data);
-  }
-
-  this.send_update = function() {
-
-    list = []
-    _.each(connections, function(terminal,socket) {
-      list.push(terminal.getLastStatus());
-    });
-
-    new_status = {
-      connections: Object.keys(connections).length,
-      list: list
-    }
-
-    if (!_.isEqual(new_status,self.last_status)) {
-      self.last_status = new_status
-      conf.sockets.volatile.emit('status', self.last_status);
-    }
-  }
-
-  setInterval(self.send_update,1000)
-
-}
-util.inherits(TerminalManager, events.EventEmitter);
-
 
 
 
