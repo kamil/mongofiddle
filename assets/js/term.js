@@ -2108,33 +2108,44 @@ Terminal.prototype.keyDown = function(ev) {
     default:
       // a-z and space
       if (ev.ctrlKey) {
-        if (ev.keyCode >= 65 && ev.keyCode <= 90) {
-          key = String.fromCharCode(ev.keyCode - 64);
-        } else if (ev.keyCode === 32) {
-          // NUL
-          key = String.fromCharCode(0);
-        } else if (ev.keyCode >= 51 && ev.keyCode <= 55) {
-          // escape, file sep, group sep, record sep, unit sep
-          key = String.fromCharCode(ev.keyCode - 51 + 27);
-        } else if (ev.keyCode === 56) {
-          // delete
-          key = String.fromCharCode(127);
-        } else if (ev.keyCode === 219) {
-          // ^[ - escape
-          key = String.fromCharCode(27);
-        } else if (ev.keyCode === 221) {
-          // ^] - group sep
-          key = String.fromCharCode(29);
+        
+        if (
+            ev.keyCode == 82 || // R
+            ev.keyCode == 65 || // A
+            ev.keyCode == 68 || // D
+            ev.keyCode == 69 || // E
+            ev.keyCode == 67    // C
+        ) {
+            key = String.fromCharCode(ev.keyCode - 64);
         }
-      } else if ((!isMac && ev.altKey) || (isMac && ev.metaKey)) {
-        if (ev.keyCode >= 65 && ev.keyCode <= 90) {
-          key = '\x1b' + String.fromCharCode(ev.keyCode + 32);
-        } else if (ev.keyCode === 192) {
-          key = '\x1b`';
-        } else if (ev.keyCode >= 48 && ev.keyCode <= 57) {
-          key = '\x1b' + (ev.keyCode - 48);
-        }
-      }
+
+        //if (ev.keyCode >= 65 && ev.keyCode <= 90) {
+        //  key = String.fromCharCode(ev.keyCode - 64);
+        //} else if (ev.keyCode === 32) {
+        //  // NUL
+        //  key = String.fromCharCode(0);
+        //} else if (ev.keyCode >= 51 && ev.keyCode <= 55) {
+        //  // escape, file sep, group sep, record sep, unit sep
+        //  key = String.fromCharCode(ev.keyCode - 51 + 27);
+        //} else if (ev.keyCode === 56) {
+        //  // delete
+        //  key = String.fromCharCode(127);
+        //} else if (ev.keyCode === 219) {
+        //  // ^[ - escape
+        //  key = String.fromCharCode(27);
+        //} else if (ev.keyCode === 221) {
+        //  // ^] - group sep
+        //  key = String.fromCharCode(29);
+        //}
+      } //else if ((!isMac && ev.altKey) || (isMac && ev.metaKey)) {
+      //  if (ev.keyCode >= 65 && ev.keyCode <= 90) {
+      //    key = '\x1b' + String.fromCharCode(ev.keyCode + 32);
+      //  } else if (ev.keyCode === 192) {
+      //    key = '\x1b`';
+      //  } else if (ev.keyCode >= 48 && ev.keyCode <= 57) {
+      //    key = '\x1b' + (ev.keyCode - 48);
+      //  }
+      //}
       break;
   }
 
