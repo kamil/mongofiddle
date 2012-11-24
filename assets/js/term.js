@@ -916,6 +916,12 @@ Terminal.prototype.startBlink = function() {
   this._blink = setInterval(this._blinker, 500);
 };
 
+Terminal.prototype.hideCursor = function() {
+  clearInterval(this._blink);
+  this.cursorState = 0;
+  this.refresh(this.y, this.y);
+}
+
 Terminal.prototype.refreshBlink = function() {
   if (!Terminal.cursorBlink) return;
   clearInterval(this._blink);
