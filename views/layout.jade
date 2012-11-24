@@ -3,16 +3,17 @@ html(lang='en')
   head
     title MongoDb Fiddle
     link(rel='stylesheet', href='http://fonts.googleapis.com/css?family=Quando')
+    link(rel='stylesheet', href='http://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700&subset=latin,latin-ext')
   
     != css('console')
-    != js('term')
-    != js('console2')
+    != js('fiddle')
 
     block head
 
   body
     block content
-    footer(style="display:none;")
+
+    footer
       p(style="float:left;").warning
         = "Powered by "
         a.nodejs(href="http://nodejs.org") node
@@ -22,7 +23,7 @@ html(lang='en')
           span DB
 
       p(style="float:right;").warning
-        span(style="color:black") Made by
+        span(style="color:black") By
         span  @
-        a(href="http://twitter.com/KamilZaleski",style="color:black") KamilZaleski
+        a(href="http://kamilzaleski.com",style="color:black") KamilZaleski
 
