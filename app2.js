@@ -1,7 +1,7 @@
 /* MongoFiddle */
 
 packageInfo = JSON.parse(require('fs').readFileSync('./package.json','utf-8'));
-console.log("MongoFiddle v",packageInfo.version);
+console.log("MongoFiddle v",packageInfo.version,process.env.NODE_ENV || "development");
 
 var express = require('express')
   , io = require('socket.io')
@@ -38,18 +38,19 @@ app.configure(function(){
 
 app.configure('development', function(){
   app.use(express.errorHandler());
-  
-  config.port = 5000;
+  config.port = process.env.PORT || 5000;
 });
+
+app.configure('production', function(){
+  config.port = process.env.PORT || 80;
+});
+
 
 var server = http.createServer(app);
 server.listen(config.port)
 var io = io.listen(server);
+io.disable('log');
 
-
-io.configure('development', function () {
-  io.disable('log');
-});
 
 
 c = {
