@@ -15,7 +15,6 @@ block content
     #wrap(style='float:left;')
       #terminal.terminal
     #wrap-side(style='background-color:white; float:left; min-width:500px; position:relative; width:39%')
-      i.icon-chevron-right(style="position:absolute; right:10px; top:10px; ")
       section(id="manual", style="margin:0px 10px; overflow:auto;")
         include manual/start
         //-
@@ -29,7 +28,3 @@ block content
           include manual/update_operators
           include manual/deleting_data
           include manual/end
-      section.alert(style="margin:10px; display:none;")
-        | There are some limits - 50Mb DB size on disk, so you can store about 100 000 documents and
-        | 10 min inactivity timeout.
-

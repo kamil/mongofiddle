@@ -2,12 +2,11 @@ div(data-id='start',data-title="Start")
 
   h2 Welcome to MongoFiddle.
   p
+    em 
+      strong Preview version
+      | , first goal achived - something works!
+  //- p
     | MongoFiddle is place in web you can play with mongodb console
-    br
-    | Whole tutorial are havely based on 
-    a(href="http://try.mongodb.com/") try.mongodb.com
-  p
-    | If you don't know what is MongoDB yet, hire is a simple definition:
 
   //-
     blockquote
@@ -26,15 +25,18 @@ div(data-id='start',data-title="Start")
     | a wide variety of languages such as Ruby, Scala, C#, Node, Java and more.
     | MongoDB supports a variety of features (such as replication and indexing) that you’d typically find in RDMS offerings,
     | but also offers unique capabilities such as auto-sharding and batch processing via MapReduce.
-  p
   
-  p This is real mongo shell connecting to real MongoDb server.
+  p
+    strong This is real mongo shell connecting to real MongoDb server.
 
   p
     | type 
     code help
     |  for help
 
+  p
+    | You can also try tutorial in 
+    a(href="http://try.mongodb.com/") try.mongodb.com
 
   //- #modal.modal.hide.fade(role="dialog")
     .modal-header

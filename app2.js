@@ -240,11 +240,11 @@ io.on('connection', function(socket) {
 
 
 app.get('/', function(req, res) {
-  res.render('console', { id: null, config: config });
+  res.render('console', { id: null, config: config, env: process.env.NODE_ENV  });
 });
 
 app.get('/:id/shell', function(req,res) {
-  res.render('console', { id: req.params.id, config: config });
+  res.render('console', { id: req.params.id, config: config, env: process.env.NODE_ENV });
 });
 
 
