@@ -1,6 +1,8 @@
 /* MongoFiddle */
 
-packageInfo = JSON.parse(require('fs').readFileSync('./package.json','utf-8'));
+var fs = require('fs');
+
+packageInfo = JSON.parse(fs.readFileSync('./package.json','utf-8'));
 console.log("MongoFiddle v",packageInfo.version,process.env.NODE_ENV || "development");
 
 var express = require('express')
@@ -10,6 +12,7 @@ var express = require('express')
   , events = require('events')
   , _ = require('underscore')
   , colors = require('colors')
+  , exec = require('child_process').exec
   , term = require('./lib/terminal')
   , TerminalManager = require('./lib/terminal_manager').TerminalManager
   , utils = require('./lib/utils');
@@ -44,6 +47,23 @@ app.configure('development', function(){
 app.configure('production', function(){
   config.port = process.env.PORT || 80;
 });
+
+serversInfo = [];
+
+function reloadServersConfig() {
+  serversInfo = JSON.parse(fs.readFileSync('./servers.json','utf-8'));
+  return serversInfo;
+}
+
+reloadServersConfig();
+
+fs.watchFile('./servers.json', function (curr, prev) {
+  if (curr.mtime != prev.mtime) {
+    console.log('Reloading server file');
+    reloadServersConfig();
+  }
+});
+
 
 
 var server = http.createServer(app);
@@ -112,8 +132,10 @@ function createNewDB(attrs, callback, max_tries) {
         name: "db_" + item._id
       },attrs);
 
-      db.save(function(err, item) {
-        callback(err,db);
+      createDb(db,function(err,db) {
+        db.save(function(err, item) {
+          callback(err,db);
+        });
       });
 
     } // err
@@ -121,14 +143,52 @@ function createNewDB(attrs, callback, max_tries) {
 
 };
 
-// createDb('2.2.0',{ name: user: pass: })
-function createDb(version,db) {
+// createDb({ mongo: { name: "db_XYZ" } })
+function createDb(db,callback) {
+  var server = serversInfo.servers[_.random(0,serversInfo.length)];
+
+  db.mongo.host = server.host;
+  db.mongo.port = server.port;
+
+  if (server.pass) {
+
+    db.mongo.user = 'user'
+    db.mongo.pass = Math.random().toString(36).substring(7);
+
+    var cmdMongo = [ "mongo","--port", server.port, "-u",server.user, "-p",server.pass,
+      "admin --eval \"db = db.getSiblingDB('"+db.mongo.name+"'); db.addUser('"+db.mongo.user+"','"+db.mongo.pass+"');\""].join(' ');
+
+    exec(cmdMongo, function (error, stdout, stderr) {
+      //console.log('createdatabase - stdout: ' + stdout);
+      //console.log('createdatabase - stderr: ' + stderr);
+      //if (error !== null) {
+      //  console.log('createdatabase - exec error: ' + error);
+      //}
+      
+      if (stdout.indexOf('"user" : "user"') > 0) {
+        callback(null,db);
+      } else {
+        console.log('createDB error',stdout)
+        callback({msg:stdout},null);
+      }
+
+    });
+
+  } else {
+    callback(null,db);
+  }
+
 }
 
 
 
 
-var tm = new TerminalManager({ sockets: io.sockets });
+
+var tm = new TerminalManager({
+  sockets: io.sockets,
+  mongoCmd: serversInfo.cmd.exec,
+  mongoArgs: serversInfo.cmd.args
+});
 
 io.on('connection', function(socket) {
 
@@ -152,10 +212,7 @@ io.on('connection', function(socket) {
       socket.emit('msg','Creating new MongoDB database for you...'.bold.grey+"\n\r");
 
 
-      createNewDB({
-          host: 'localhost',
-          port: 27017
-        },function(err,entry) {
+      createNewDB({},function(err,entry) {
           socket.emit('request-console',entry._id);
           tm.request(socket,entry);
       });

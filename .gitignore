@@ -19,3 +19,5 @@ npm-debug.log
 
 builtAssets
 builtAssets/*
+
+servers.json
