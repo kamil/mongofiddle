@@ -1,12 +1,16 @@
 doctype 5
 html(lang='en')
   head
+    meta(charset='utf-8')
     title MongoDb Fiddle
+    meta(name='description',content='')
+    meta(name='author',content='Kamil Załęski')
+
     link(rel='stylesheet', href='http://fonts.googleapis.com/css?family=Quando')
     link(rel='stylesheet', href='http://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700&subset=latin,latin-ext')
-  
+
     != css('console')
-    != js('fiddle')
+    // og:...
 
     block head
 
@@ -14,16 +18,19 @@ html(lang='en')
     block content
 
     footer
-      p(style="float:left;").warning
-        = "Powered by "
-        a.nodejs(href="http://nodejs.org") node
+      p.warning(style="margin:10px;")
+        | Created by
+        span  @
+        a(href="http://kamilzaleski.com",style="color:black",title="Kamil Załęski") KamilZaleski
+        br
+        | Powered by 
+        a.nodejs(href="http://nodejs.org",title="node.js") node
           span JS
         &amp;
-        a.mongodb(href="http://mongodb.org") mongo
+        a.mongodb(href="http://mongodb.org",title="MongoDB") mongo
           span DB
-
-      p(style="float:right;").warning
-        span(style="color:black") By
-        span  @
-        a(href="http://kamilzaleski.com",style="color:black") KamilZaleski
-
+        |  open sourced at 
+        a.github(href="http://github.com/kamil/mongofiddle",title="MongoFiddle at GitHub") GitHub
+      
+    
+    != js('fiddle')

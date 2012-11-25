@@ -10,6 +10,9 @@ body {
 
 }
 
+header {
+}
+
 
 #beta {
   background-color:lightyellow;
@@ -60,7 +63,7 @@ footer .warning {
 }
 
 
-a.nodejs, a.mongodb {
+a.nodejs, a.mongodb, a.github, a.version {
   text-decoration: none;
   cursor: pointer;
 }
@@ -76,7 +79,18 @@ a.nodejs span {
   color: #BBC354;
 }
 
-
+a.version {
+  background-color: grey;
+  color: #EEE;
+  border-radius: 2px;
+  padding: 0px 2px;
+  font-family: monospace;
+  font-size: 12px;
+  line-height: 16px;
+  position: absolute;
+  left: 309px;
+  top: 31px;
+}
 a.mongodb {
   background-color: #3F2A1C;
   color: white;
@@ -88,83 +102,10 @@ a.mongodb span {
   color: #F2D8A6;
 }
 
-
-.version {
-  float: left;
-  text-shadow: none;
-  font-size: 10px !important;
-  line-height: 1em !important;
-  display: block;
-  color: #666;
-  text-shadow: 1px 1px 1px white;
-  margin-right: 5px;
-  margin-bottom: 7px;
-  padding: 6px 20px 6px 6px;
-  line-height: 1.3em;
-  border: 1px solid #DDD;
-  webkit-border-radius: 3px;
-  -moz-border-radius: 3px;
-  border-radius: 3px;
-  position: absolute;
-z-index: 9000;
-left: 355px;
-top: 29px;
-  
-  background: url("data:image/png;charset=utf-8;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAGCAYAAAARx7TFAAAAV0lEQVR42mN4+ObTf3zgybvP/xlA4MvPX1gVfAaKM8DAxrN3/n/7harwO5B/5OZThCIQuPT49f+fv3/DFT148wFVAQw8//AZrODN52/YFcDAh2/fMRQAAGFYfHRjhBGcAAAAAElFTkSuQmCC") 93% 55% no-repeat, #eee;
+a.github {
+  background-color: #424242;
+  color: white;
+  border-radius: 2px;
+  padding: 1px 2px;
 }
-
-.version:hover {
-  border: 1px solid #aaa;
-  color:#333;
-  cursor:pointer;
-}
-
-.version-active {
-  border: 1px solid #aaa;
-  color:#333;
-  border-radius: 0;
-  border-top-left-radius: 3px;
-  border-top-right-radius: 3px;
-  border-bottom: 1px solid #eee;
-}
-
-.version-sel {
-  border-radius: 3px;
-border-top-left-radius: 0;
-  background-color:#eee;
-  position: absolute;
-  z-index:8000;
-  top: 52px;
-  left: 355px;
-  width: 350px;
-   border: 1px solid #aaa;
- display:none;
-}
-
-.version-active:hover {
-  color: #666;
-  border-bottom: 1px solid #eee;
-
-}
-
-
-.version-sel ul {
-  list-style-type: none;
-  margin:0;
-  padding:0;
-  margin:5px;
-}
-
-.version-sel ul li {
-  padding:5px 15px;
-  border: 1px solid #eee;
-}
-
-.version-sel ul li:hover {
-  border-radius: 5px;
-  border: 1px solid #aaa;
-  cursor: pointer;
-}
-
-
 

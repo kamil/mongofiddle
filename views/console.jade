@@ -7,42 +7,29 @@ block head
 
 block content
 
-  p(id="beta")
-
+  header
+    h1 MongoFiddle
+    a.version(href="#",title="Version information ( not implemented )") v0.0.1
+  
   #wwrap(style='overflow:hidden;')
-    #wrap(style='float:left; width:55%; min-width:500px;')
+    #wrap(style='float:left;')
       #terminal.terminal
-    #wrap-side(style='display:none; background-color:white; float:left; width:40%; min-width:350px; position:relative;')
+    #wrap-side(style='background-color:white; float:left; min-width:500px; position:relative; width:39%')
       i.icon-chevron-right(style="position:absolute; right:10px; top:10px; ")
       section(id="manual", style="margin:0px 10px; overflow:auto;")
         include manual/start
-        include manual/js-shell
-        include manual/documents
-        include manual/saving
-        include manual/saving_and_querying
-        include manual/basic_queries
-        include manual/query_operators
-        include manual/updates
-        include manual/update_operators
-        include manual/deleting_data
-        include manual/end
-      section(id="info",style="background-color:lightyellow; height:100px;")
-        section(style="margin:0px 10px; padding-top:10px;")
-          | ⌘+right - next
-          br
-          | ⌘+left - prev
-  pre(id="server-status")
-      //- #head(style='background-color:lightyellow; height:40px; position:relative;')
-        //- select(style='position:absolute; top:10px; right:10px; ')
-        //-  each val, key in config.manual_description
-        //-    option(value=key) #{val}
-
-
-
- // section
- //   div Limits
- //   ul
- //     li 50Mb DB size on disk, so you can store about 100 000 documents
- //     li 5 second command timeout, 10 min inactivity timeout
-
+        //-
+          include manual/js-shell
+          include manual/documents
+          include manual/saving
+          include manual/saving_and_querying
+          include manual/basic_queries
+          include manual/query_operators
+          include manual/updates
+          include manual/update_operators
+          include manual/deleting_data
+          include manual/end
+      section.alert(style="margin:10px; display:none;")
+        | There are some limits - 50Mb DB size on disk, so you can store about 100 000 documents and
+        | 10 min inactivity timeout.
 

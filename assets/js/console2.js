@@ -17,11 +17,42 @@ var term, socket;
 
 $(function(){
 
-  $('#manual div').hide();
-  $('#manual').show();
-  loadContent('start');
+  resizeElements = function() {
+    $("#wrap").height($(window).height()-170);
+    $("#manual").height($(window).height()-160);
+  }
 
-  term = new Terminal(80, 24)
+  resizeElements();
+
+  // terminal size
+  // 714px -> 102 ch-w
+  // wide_ch = 102*wide_px /714
+  // 
+  // 336px -> 24 ch-w
+  // high_ch = 24*high_px / 336
+
+
+  function terminalSize(pwidth, pheight) {
+
+    var width = 102*pwidth/714, height = 24*pheight/336;
+
+    if (width<102) {
+      width = 102;
+    }
+    if (height<24) {
+      height = 24;
+    }
+
+    return { width: parseInt(width), height: parseInt(height) }
+  }
+
+
+  var initTermSize = terminalSize( $('#wrap').width(), $('#wrap').height() )
+
+  console.log(initTermSize);
+
+
+  term = new Terminal( initTermSize.width, initTermSize.height )
   socket = new io.connect(ConsoleConfig.socket);
 
   socket.on('connect', function() {
@@ -56,6 +87,14 @@ $(function(){
 
   socket.on('msg',function(msg) {
     term.write(msg);
+  });
+
+  
+  $(window).resize(function() {
+    var termSize = terminalSize( $("#wrap").width(), $("#wrap").height() );
+    term.resize(termSize.width,termSize.height);
+    resizeElements();
+    console.log('resized', termSize);
   });
 
 })
