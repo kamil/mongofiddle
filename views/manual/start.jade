@@ -29,8 +29,28 @@ div(data-id='start',data-title="Start")
   p
   
   p This is real mongo shell connecting to real MongoDb server.
-  
+
   p
     | type 
     code help
     |  for help
+
+  #modal.modal.hide.fade(role="dialog")
+    .modal-header
+      button(type="button",class="close",data-dismiss="modal",aria-hidden="true") x
+      h3 Subscribe
+    .modal-body
+      link(href="http://cdn-images.mailchimp.com/embedcode/slim-081711.css", rel="stylesheet", type="text/css")
+      #mc_embed_signup
+        form(action="http://mongofiddle.us6.list-manage.com/subscribe/post?u=843157a3c95470e9e58cb0b36&amp;id=536a3ee09f", method="post", id="mc-embedded-subscribe-form", name="mc-embedded-subscribe-form", class="validate", target="_blank", novalidate)
+          label(for="mce-EMAIL")
+            | Subscribe to get info about new features
+            br
+            | No more than ONE email monthly.
+          input(type="email",value="",name="EMAIL",class="email",id="mce-EMAIL",placeholder="email address", required)
+          .clear
+            input(type="submit",value="Subscribe",name="subscribe",id="mc-embedded-subscribe",class="button")
+      img(style="width: 80px;margin-left: 15px;",src="http://cdn-images.mailchimp.com/monkey_rewards/MC_MonkeyReward_08.png")
+
+  p
+    button.btn.btn-info.btn-mini.hide(data-toggle="modal",data-target="#modal") Subscribe!
