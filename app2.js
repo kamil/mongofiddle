@@ -1,3 +1,8 @@
+/* MongoFiddle */
+
+packageInfo = JSON.parse(require('fs').readFileSync('./package.json','utf-8'));
+console.log("MongoFiddle v",packageInfo.version);
+
 var express = require('express')
   , io = require('socket.io')
   , http = require('http')
@@ -10,9 +15,13 @@ var express = require('express')
   , utils = require('./lib/utils');
 
 
+
 var app = express();
 
-config = {}
+config = {
+  // default values
+  version: packageInfo.version
+}
 
 app.configure(function(){
   //app.set('port', process.env.PORT || 3000);
