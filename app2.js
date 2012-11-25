@@ -196,7 +196,8 @@ io.on('connection', function(socket) {
 
 
     if (id) {
-      console.log('searching for id');
+      console.log('console from db',id);
+
       Db.findById(id, function(err,entry) {
         if (!entry) {
           // TODO: INFORM USER ABOUT NON EXISTING ID
@@ -208,6 +209,9 @@ io.on('connection', function(socket) {
       });
     } else {
       // CREATE NEW DB
+      //
+      
+      console.log('new console');
 
       socket.emit('msg','Creating new MongoDB database for you...'.bold.grey+"\n\r");
 
