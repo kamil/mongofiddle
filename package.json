@@ -1,19 +1,29 @@
 {
   "name": "mongofiddle",
+  "description": "Mongofiddle.com website",
+  "author": "Kamil Zaleski <kamil.zaleski@gmail.com>",
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node app"
+    "start": "node app2"
+  },
+  "keywords": [
+    "mongodb",
+    "website"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kamil/mongofiddle.git"
   },
   "dependencies": {
-    "express": "3.0.0beta6",
-    "jade": "*",
-    "socket.io": "*",
-    "mongoose" : "*",
-    "connect-assets" : "*",
-    "less" : "*",
-    "pty.js" : "*",
-    "underscore" : "*",
-    "colors" : "*"
+    "express": "3.0.3",
+    "jade": "0.27.7",
+    "socket.io": "0.9.11",
+    "mongoose" : "3.4.0",
+    "connect-assets" : "2.3.3",
+    "less" : "1.3.1",
+    "pty.js" : "0.1.2",
+    "underscore" : "1.4.2",
+    "colors" : "0.6.0-1"
   }
 }
