@@ -102,7 +102,7 @@ var dbSchema = new Schema({
 }, { _id: false, autoIndex: false });
 
 
-db = mongoose.createConnection('localhost', 'mongofiddle')
+db = mongoose.createConnection(serversInfo.mainDb)
 
 var Db = db.model('dbs', dbSchema); 
 
