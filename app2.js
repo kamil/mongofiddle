@@ -15,7 +15,8 @@ var express = require('express')
   , exec = require('child_process').exec
   , term = require('./lib/terminal')
   , TerminalManager = require('./lib/terminal_manager').TerminalManager
-  , utils = require('./lib/utils');
+  , utils = require('./lib/utils')
+  , geoip = require('geoip-lite');
 
 
 
@@ -98,6 +99,7 @@ var dbSchema = new Schema({
   _id     : String,
   mongo   : Mixed,
   updated : Date,
+  creator : Mixed,
   created : { type: Date, default: Date.now }
 }, { _id: false, autoIndex: false });
 
@@ -181,7 +183,15 @@ function createDb(db,callback) {
 }
 
 
-
+function getLocationInfo(socket) {
+  var ip = socket.handshake.address.address;
+  var info = geoip.lookup(ip);
+  
+  return { 
+    code: info ? info.country : "",
+    ip: ip
+  }
+}
 
 
 var tm = new TerminalManager({
@@ -210,13 +220,14 @@ io.on('connection', function(socket) {
     } else {
       // CREATE NEW DB
       //
-      
+
       console.log('new console');
 
       socket.emit('msg','Creating new MongoDB database for you...'.bold.grey+"\n\r");
 
-
-      createNewDB({},function(err,entry) {
+      createNewDB({
+        creator : getLocationInfo(socket)
+      },function(err,entry) {
           socket.emit('request-console',entry._id);
           tm.request(socket,entry);
       });
